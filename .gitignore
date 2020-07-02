@@ -1,1 +1,3 @@
 sleuth-plugin-*
+bin/
+.envrc
