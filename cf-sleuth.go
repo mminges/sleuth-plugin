@@ -27,7 +27,7 @@ type OutputResults struct {
 
 // Metadata is the data retrieved from the response json
 type Metadata struct {
-	GUID string `json:"guid"`
+	GUID      string `json:"guid"`
 	CreatedAt string `json:"created_at"`
 	UpdatedAt string `json:"updated_at"`
 }
@@ -38,20 +38,20 @@ func (c *Sleuth) GetMetadata() plugin.PluginMetadata {
 		Name: "sleuth",
 		Version: plugin.VersionType{
 			Major: 0,
-			Minor: 1,
+			Minor: 2,
 			Build: 0,
 		},
 		Commands: []plugin.Command{
 			{
 				Name:     "instances",
-				HelpText: "Sleuth CF foundation (by michael.minges@cgi.com)",
+				HelpText: "Sleuth CF foundation (by Michael Minges)",
 				UsageDetails: plugin.Usage {
 					Usage: UsageText(),
 				},
 			},
 			{
 				Name:     "singletons",
-				HelpText: "Sleuth CF foundation (by michael.minges@cgi.com)",
+				HelpText: "Sleuth CF foundation (by Michael Minges)",
 				UsageDetails: plugin.Usage {
 					Usage: UsageText(),
 				},
@@ -66,10 +66,11 @@ func main() {
 
 // Run is what is executed by the Cloud Foundry CLI when the sleuth command is specified
 func (c Sleuth) Run(cli plugin.CliConnection, args []string) {
-	orgs := c.GetOrgs(cli)
-	spaces := c.GetSpaces(cli)
-	apps := c.GetAppData(cli)
-	results := c.FilterResults(cli, orgs, spaces, apps)
+	orgs    := c.GetOrgs(cli)
+	spaces  := c.GetSpaces(cli)
+	apps    := c.GetAppData(cli)
+	stacks  := c.GetStacks(cli)
+	results := c.FilterResults(cli, orgs, spaces, stacks, apps)
 
 	if args[0] == "instances" {
 		c.AllApps(results)
@@ -141,6 +142,8 @@ func (c Sleuth) AllApps(results OutputResults) {
 		"Org",
 		"Space",
 		"App",
+		"Stack",
+		"Buildpack",
 		"Instances",
 	}
 
@@ -148,7 +151,7 @@ func (c Sleuth) AllApps(results OutputResults) {
 
 	for _, val := range results.Resources  {
 		instances := strconv.Itoa(val.Entity.Instances)
-		t.Add(val.Entity.Org, val.Entity.Space, val.Entity.Name, instances)
+		t.Add(val.Entity.Org, val.Entity.Space, val.Entity.Name, val.Entity.Stack, val.Entity.Buildpack, instances)
 	}
 
 	t.Print()

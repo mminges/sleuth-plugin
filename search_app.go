@@ -27,6 +27,7 @@ type AppSearchResources struct {
 // AppSearchEntity represents entity attribute of resources attribute within JSON response from Cloud Foundry API
 type AppSearchEntity struct {
 	Name              string `json:"name"`
+	StackGUID         string `json:"stack_guid"`
 	Buildpack         string `json:"buildpack"`
 	DetectedBuildpack string `json:"detected_buildpack"`
 	Instances         int    `json:"instances"`
@@ -37,6 +38,7 @@ type AppSearchEntity struct {
 	OrgGUID           string `json:"organization_guid"`
 	Space             string `json:"space"`
 	Org               string `json:"org"`
+	Stack             string `json:"stack"`
 }
 
 // GetAppData requests all of the Application data from Cloud Foundry
@@ -65,11 +67,12 @@ func (c Sleuth) UnmarshallAppSearchResults(apiUrl string, cli plugin.CliConnecti
 }
 
 // filter the results for given input criteria.
-func (c Sleuth) FilterResults(cli plugin.CliConnection, orgs map[string]string, spaces map[string]SpaceSearchEntity, apps AppSearchResults) (OutputResults) {
+func (c Sleuth) FilterResults(cli plugin.CliConnection, orgs map[string]string, spaces map[string]SpaceSearchEntity, stacks map[string]StackSearchEntity, apps AppSearchResults) (OutputResults) {
 	var results OutputResults
 
 	type AppSearchEntity struct {
 		Name              string `json:"name"`
+		StackGUID         string `json:"stack_guid"`
 		Buildpack         string `json:"buildpack"`
 		DetectedBuildpack string `json:"detected_buildpack"`
 		Instances         int    `json:"instances"`
@@ -80,6 +83,7 @@ func (c Sleuth) FilterResults(cli plugin.CliConnection, orgs map[string]string, 
 		OrgGUID           string `json:"organization_guid"`
 		Space             string `json:"space"`
 		Org               string `json:"org"`
+		Stack             string `json:"stack"`
 	}
 
 
@@ -88,6 +92,7 @@ func (c Sleuth) FilterResults(cli plugin.CliConnection, orgs map[string]string, 
 
 		outEntity.Metadata  = val.Metadata
 		outEntity.Entity.Name = val.Entity.Name
+		outEntity.Entity.StackGUID         = val.Entity.StackGUID
 		outEntity.Entity.Buildpack         = val.Entity.Buildpack
 		outEntity.Entity.DetectedBuildpack = val.Entity.DetectedBuildpack
 		outEntity.Entity.Instances         = val.Entity.Instances
@@ -98,6 +103,7 @@ func (c Sleuth) FilterResults(cli plugin.CliConnection, orgs map[string]string, 
 		outEntity.Entity.OrgGUID           = spaces[val.Entity.SpaceGUID].OrgGUID
 		outEntity.Entity.Org               = orgs[spaces[val.Entity.SpaceGUID].OrgGUID]
 		outEntity.Entity.Space             = spaces[val.Entity.SpaceGUID].Name
+		outEntity.Entity.Stack             = stacks[val.Entity.StackGUID].Name
 		results.Resources = append(results.Resources, outEntity)
 	}
 
